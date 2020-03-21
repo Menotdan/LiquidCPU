@@ -31,18 +31,21 @@ enum REGISTERS {
 enum FAULTS {
     fault_invl_opcode,
     fault_bad_reg,
+    fault_mem_err,
 };
 
 enum INSTRUCTIONS {
+    instruction_nop,
     instruction_mov,
     instruction_hlt,
+    instruction_jmp,
 };
 
 typedef struct {
-    uint64_t instruction;
+    uint16_t instruction;
     uint64_t instruction_flags;
     uint64_t data1;
     uint64_t data2;
-} instruction_t;
+} __attribute__((packed)) instruction_t;
 
 #endif

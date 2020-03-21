@@ -2,3 +2,5 @@
 liquid_assemble
 liquid_cpu
 .vscode
+**/*.o
+*.o

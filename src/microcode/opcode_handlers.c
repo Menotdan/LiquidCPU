@@ -82,6 +82,22 @@ void move_handler(cpu_t *cpu, instruction_t *instruction) {
     *dst = *src;
 }
 
+void jmp_handler(cpu_t *cpu, instruction_t *instruction) {
+    if (instruction->instruction_flags & INST_FLAG_DST_MEM_OP) {
+        printf("[LiquidCPU] Warning, unhandled memory OP.\n");
+    } else if (instruction->instruction_flags & INST_FLAG_DST_CONST) {
+        cpu->ip = instruction->data1;
+    } else {
+        // register op
+        uint64_t *jmp_loc = get_gpr(cpu, instruction->data1); // Get the GPR from this reg no
+        if (!jmp_loc) {
+            fault(cpu, fault_bad_reg);
+        } else {
+            cpu->ip = *jmp_loc; // Get the register's data
+        }
+    }
+}
+
 void hlt_handler(cpu_t *cpu, instruction_t *instruction) {
     cpu->flag |= CPU_FLAG_HLT;
 }

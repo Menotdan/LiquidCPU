@@ -4,20 +4,38 @@
 #include "microcode/microcode.h"
 #include "microcode/opcode_handlers.h"
 
+uint8_t is_valid_addr(cpu_t *cpu, uint64_t addr) {
+    if (addr > cpu->memory_size) {
+        return 0;
+    }
+
+    return 1;
+}
+
 void execute_instruction(cpu_t *cpu) {
     instruction_t *instruction = (instruction_t *) &cpu->memory[cpu->ip];
 
     if (!(cpu->flag & CPU_FLAG_HLT)) {
         printf("[LiquidCPU] Got instruction 0x%lx\n", instruction->instruction);
+
+        /* Memory check */
+        if (!is_valid_addr(cpu, cpu->ip + sizeof(instruction_t) - 1)) {
+            fault(cpu, fault_mem_err); // Memory access check
+        }
         cpu->ip += sizeof(instruction_t); // Modify the IP before executing, so that jmp, etc. works
 
         switch (instruction->instruction) {
+            case instruction_nop:
+                break;
             case instruction_mov:
                 move_handler(cpu, instruction);
                 break;
             case instruction_hlt:
                 hlt_handler(cpu, instruction);
                 printf("[LiquidCPU] Halted.\n");
+                break;
+            case instruction_jmp:
+                jmp_handler(cpu, instruction);
                 break;
             default:
                 printf("[LiquidCPU] Bad instruction %lx\n", instruction->instruction);
@@ -30,6 +48,7 @@ void execute_instruction(cpu_t *cpu) {
 
 void setup_cpu_mem(cpu_t *cpu) {
     cpu->memory = calloc(MEMORY_SIZE, 1);
+    cpu->memory_size = MEMORY_SIZE;
 }
 
 void setup_cpu(cpu_t *cpu) {

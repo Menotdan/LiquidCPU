@@ -9,16 +9,21 @@ void write_code(void *code, uint64_t code_bytes, char *output_file) {
 }
 
 void assemble_code() {
-    instruction_t instructions[2];
-    instructions[0].data1 = 0;     // Register 0
-    instructions[0].data2 = 0x123; // Move 0x123 to it
+    instruction_t instructions[3];
+    instructions[0].data1 = reg_r0;     // Register 0
+    instructions[0].data2 = 0x0; // Move 0x0 to it
     instructions[0].instruction = instruction_mov; // Move instruction
     instructions[0].instruction_flags = INST_FLAG_SRC_CONST; // Src is constant
 
-    instructions[1].data1 = 0;
+    instructions[1].data1 = reg_r0;
     instructions[1].data2 = 0;
+    instructions[1].instruction = instruction_jmp;
     instructions[1].instruction_flags = 0;
-    instructions[1].instruction = instruction_hlt;
+
+    instructions[2].data1 = 0;
+    instructions[2].data2 = 0;
+    instructions[2].instruction_flags = 0;
+    instructions[2].instruction = instruction_hlt;
 
     write_code(&instructions, sizeof(instructions), "liquid_test.liq");
 }
