@@ -16,6 +16,70 @@ void fault(cpu_t *cpu, uint64_t fault_no) {
     (void) fault_no; // Unused for now
 }
 
+uint64_t read_memory_64(cpu_t *cpu, uint64_t addr) {
+    if (!is_valid_addr(cpu, addr) || !is_valid_addr(cpu, addr + 7)) {
+        fault(cpu, fault_mem_err);
+    }
+
+    return *(uint64_t *) (&cpu->memory[addr]);
+}
+
+uint32_t read_memory_32(cpu_t *cpu, uint64_t addr) {
+    if (!is_valid_addr(cpu, addr) || !is_valid_addr(cpu, addr + 3)) {
+        fault(cpu, fault_mem_err);
+    }
+
+    return *(uint32_t *) (&cpu->memory[addr]);
+}
+
+uint16_t read_memory_16(cpu_t *cpu, uint64_t addr) {
+    if (!is_valid_addr(cpu, addr) || !is_valid_addr(cpu, addr + 1)) {
+        fault(cpu, fault_mem_err);
+    }
+
+    return *(uint16_t *) (&cpu->memory[addr]);
+}
+
+uint8_t read_memory_8(cpu_t *cpu, uint64_t addr) {
+    if (!is_valid_addr(cpu, addr) || !is_valid_addr(cpu, addr + 0)) {
+        fault(cpu, fault_mem_err);
+    }
+
+    return *(uint8_t *) (&cpu->memory[addr]);
+}
+
+void write_memory_64(cpu_t *cpu, uint64_t addr, uint64_t dat) {
+    if (!is_valid_addr(cpu, addr) || !is_valid_addr(cpu, addr + 7)) {
+        fault(cpu, fault_mem_err);
+    }
+
+    *(uint64_t *) (&cpu->memory[addr]) = dat;
+}
+
+void write_memory_32(cpu_t *cpu, uint64_t addr, uint32_t dat) {
+    if (!is_valid_addr(cpu, addr) || !is_valid_addr(cpu, addr + 3)) {
+        fault(cpu, fault_mem_err);
+    }
+
+    *(uint32_t *) (&cpu->memory[addr]) = dat;
+}
+
+void write_memory_16(cpu_t *cpu, uint64_t addr, uint16_t dat) {
+    if (!is_valid_addr(cpu, addr) || !is_valid_addr(cpu, addr + 1)) {
+        fault(cpu, fault_mem_err);
+    }
+
+    *(uint16_t *) (&cpu->memory[addr]) = dat;
+}
+
+void write_memory_8(cpu_t *cpu, uint64_t addr, uint8_t dat) {
+    if (!is_valid_addr(cpu, addr) || !is_valid_addr(cpu, addr + 0)) {
+        fault(cpu, fault_mem_err);
+    }
+
+    *(uint8_t *) (&cpu->memory[addr]) = dat;
+}
+
 /* Get GPR from register no */
 uint64_t *get_gpr(cpu_t *cpu, uint64_t register_info) {
     uint64_t *ret = (uint64_t *) 0;
@@ -139,18 +203,11 @@ void jmp_handler(cpu_t *cpu, instruction_t *instruction) {
             }
 
             uint64_t addr = *reg;
-            if (!is_valid_addr(cpu, addr)) {
-                fault(cpu, fault_mem_err);
-            }
 
             // We got the address
-            cpu->ip = *(uint64_t *) &cpu->memory[addr];
+            cpu->ip = read_memory_64(cpu, addr);
         } else {
-            if (!is_valid_addr(cpu, instruction->data1)) {
-                fault(cpu, fault_mem_err);
-            }
-
-            cpu->ip = *(uint64_t *) &cpu->memory[instruction->data1];
+            cpu->ip = read_memory_64(cpu, instruction->data1);
         }
     } else if (instruction->instruction_flags & INST_FLAG_DST_CONST) {
         cpu->ip = instruction->data1;
@@ -178,18 +235,11 @@ void inc_handler(cpu_t *cpu, instruction_t *instruction) {
             }
 
             uint64_t addr = *reg;
-            if (!is_valid_addr(cpu, addr)) {
-                fault(cpu, fault_mem_err);
-            }
 
             // We got the address
-            (*(uint64_t *) &cpu->memory[addr])++;
+            write_memory_64(cpu, addr, read_memory_64(cpu, addr) + 1);
         } else {
-            if (!is_valid_addr(cpu, instruction->data1)) {
-                fault(cpu, fault_mem_err);
-            }
-
-            (*(uint64_t *) &cpu->memory[instruction->data1])++;
+            write_memory_64(cpu, instruction->data1, read_memory_64(cpu, instruction->data1) + 1);
         }
     } else if (instruction->instruction_flags & INST_FLAG_DST_CONST) {
         printf("[LiquidCPU] Bad const. bruh\n");
@@ -213,18 +263,11 @@ void dec_handler(cpu_t *cpu, instruction_t *instruction) {
             }
 
             uint64_t addr = *reg;
-            if (!is_valid_addr(cpu, addr)) {
-                fault(cpu, fault_mem_err);
-            }
 
             // We got the address
-            (*(uint64_t *) &cpu->memory[addr])--;
+            write_memory_64(cpu, addr, read_memory_64(cpu, addr) - 1);
         } else {
-            if (!is_valid_addr(cpu, instruction->data1)) {
-                fault(cpu, fault_mem_err);
-            }
-
-            (*(uint64_t *) &cpu->memory[instruction->data1])--;
+            write_memory_64(cpu, instruction->data1, read_memory_64(cpu, instruction->data1) + 1);
         }
     } else if (instruction->instruction_flags & INST_FLAG_DST_CONST) {
         printf("[LiquidCPU] Bad const. bruh\n");

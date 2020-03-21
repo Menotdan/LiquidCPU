@@ -68,11 +68,13 @@ uint64_t get_operand_size(uint8_t operand_size) {
     }
 }
 
+uint64_t clock_cycles = 0;
+
 void execute_instruction(cpu_t *cpu) {
     instruction_t *instruction = (instruction_t *) &cpu->memory[cpu->ip];
 
     if (!(cpu->flag & CPU_FLAG_HLT)) {
-        printf("[LiquidCPU] Got instruction 0x%lx\n", instruction->instruction);
+        //printf("[LiquidCPU] Got instruction 0x%lx\n", instruction->instruction);
 
         /* Memory check */
         if (!is_valid_addr(cpu, cpu->ip + sizeof(instruction_t) - 1)) {
@@ -104,7 +106,13 @@ void execute_instruction(cpu_t *cpu) {
                 fault(cpu, fault_invl_opcode);
                 break;
         }
-        printf("[LiquidCPU] r0: 0x%lx\n[LiquidCPU] r1: 0x%lx\n", cpu->r0, cpu->r1);
+        //printf("[LiquidCPU] r0: 0x%lx\n[LiquidCPU] r1: 0x%lx\n", cpu->r0, cpu->r1);
+    }
+
+    clock_cycles++;
+    if (clock_cycles % 100000 == 0) {
+        printf("[LiquidCPU] r0: 0x%lx\n[LiquidCPU] r1: 0x%lx\n[LiquidCPU] ip: 0x%lx\n", cpu->r0, cpu->r1, cpu->ip);
+        printf("[LiquidCPU] clock_cycles: %lu\n", clock_cycles);
     }
 }
 

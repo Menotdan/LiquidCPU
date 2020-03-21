@@ -14,10 +14,10 @@ void write_code(void *code, uint64_t code_bytes, char *output_file) {
 
 void assemble_code() {
     instruction_t instructions[4];
-    instructions[0].data1 = reg_r0;     // Register 0
+    instructions[0].data1 = 0x1000;     // Register 0
     instructions[0].data2 = get_addr_inst(1); // Move the addr of the next instruction
     instructions[0].instruction = instruction_mov; // Move instruction
-    instructions[0].instruction_flags = INST_FLAG_SRC_CONST | INST_FLAG_DST_REG; // Src is constant, and dst is a reg
+    instructions[0].instruction_flags = INST_FLAG_SRC_CONST | INST_FLAG_DST_MEM_OP; // Src is constant, and dst is a reg
     instructions[0].operand_size_src = operand_8;
     instructions[0].operand_size_dst = operand_8;
 
@@ -28,12 +28,12 @@ void assemble_code() {
     instructions[1].operand_size_dst = operand_8;
 
     /* Data */
-    instructions[2].data1 = reg_r0;
+    instructions[2].data1 = 0x1000;
     instructions[2].data2 = 0;
 
     /* Instruction and flags */
     instructions[2].instruction = instruction_jmp;
-    instructions[2].instruction_flags = INST_FLAG_DST_REG;
+    instructions[2].instruction_flags = INST_FLAG_DST_MEM_OP;
 
     /* Operand sizes */
     instructions[2].operand_size_dst = operand_8;
