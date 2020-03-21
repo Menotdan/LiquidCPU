@@ -30,5 +30,7 @@ typedef struct {
 
 void setup_cpu(cpu_t *cpu);
 void cpu_code_loop(cpu_t *cpu);
+uint8_t is_valid_addr(cpu_t *cpu, uint64_t addr);
+uint64_t get_operand_size(uint8_t operand_size);
 
 #endif

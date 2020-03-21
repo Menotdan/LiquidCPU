@@ -6,6 +6,8 @@
 #define INST_FLAG_DST_MEM_OP (1<<1)
 #define INST_FLAG_SRC_CONST (1<<2)
 #define INST_FLAG_DST_CONST (1<<3)
+#define INST_FLAG_SRC_REG (1<<4)
+#define INST_FLAG_DST_REG (1<<5)
 
 #define CPU_FLAG_HLT (1<<0)
 
@@ -32,6 +34,7 @@ enum FAULTS {
     fault_invl_opcode,
     fault_bad_reg,
     fault_mem_err,
+    fault_bad_flg,
 };
 
 enum INSTRUCTIONS {
@@ -39,11 +42,34 @@ enum INSTRUCTIONS {
     instruction_mov,
     instruction_hlt,
     instruction_jmp,
+    instruction_inc,
+    instruction_dec,
+};
+
+enum OPERAND_SIZES {
+    operand_1,
+    operand_2,
+    operand_4,
+    operand_8,
+    operand_16,
+    operand_24,
+    operand_32,
+    operand_40,
+    operand_48,
+    operand_56,
+    operand_64,
+    operand_128,
+    operand_256,
+    operand_512,
+    operand_1024,
+    operand_2048,
 };
 
 typedef struct {
-    uint16_t instruction;
-    uint64_t instruction_flags;
+    uint8_t instruction;
+    uint8_t instruction_flags;
+    uint8_t operand_size_src : 4;
+    uint8_t operand_size_dst : 4;
     uint64_t data1;
     uint64_t data2;
 } __attribute__((packed)) instruction_t;

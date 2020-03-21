@@ -12,6 +12,62 @@ uint8_t is_valid_addr(cpu_t *cpu, uint64_t addr) {
     return 1;
 }
 
+uint64_t get_operand_size(uint8_t operand_size) {
+    switch (operand_size) {
+        case operand_1:
+            return 1;
+            break;
+        case operand_2:
+            return 2;
+            break;
+        case operand_4:
+            return 4;
+            break;
+        case operand_8:
+            return 8;
+            break;
+        case operand_16:
+            return 16;
+            break;
+        case operand_24:
+            return 24;
+            break;
+        case operand_32:
+            return 32;
+            break;
+        case operand_40:
+            return 40;
+            break;
+        case operand_48:
+            return 48;
+            break;
+        case operand_56:
+            return 56;
+            break;
+        case operand_64:
+            return 64;
+            break;
+        case operand_128:
+            return 128;
+            break;
+        case operand_256:
+            return 256;
+            break;
+        case operand_512:
+            return 512;
+            break;
+        case operand_1024:
+            return 1024;
+            break;
+        case operand_2048:
+            return 2048;
+            break;
+        default:
+            return 0;
+            break;
+    }
+}
+
 void execute_instruction(cpu_t *cpu) {
     instruction_t *instruction = (instruction_t *) &cpu->memory[cpu->ip];
 
@@ -37,12 +93,18 @@ void execute_instruction(cpu_t *cpu) {
             case instruction_jmp:
                 jmp_handler(cpu, instruction);
                 break;
+            case instruction_inc:
+                inc_handler(cpu, instruction);
+                break;
+            case instruction_dec:
+                dec_handler(cpu, instruction);
+                break;
             default:
                 printf("[LiquidCPU] Bad instruction %lx\n", instruction->instruction);
                 fault(cpu, fault_invl_opcode);
                 break;
         }
-        printf("[LiquidCPU] r0: 0x%lx\n", cpu->r0);
+        printf("[LiquidCPU] r0: 0x%lx\n[LiquidCPU] r1: 0x%lx\n", cpu->r0, cpu->r1);
     }
 }
 

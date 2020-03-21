@@ -8,6 +8,8 @@
 void move_handler(cpu_t *cpu, instruction_t *instruction);
 void hlt_handler(cpu_t *cpu, instruction_t *instruction);
 void jmp_handler(cpu_t *cpu, instruction_t *instruction);
+void inc_handler(cpu_t *cpu, instruction_t *instruction);
+void dec_handler(cpu_t *cpu, instruction_t *instruction);
 
 /* Fault stuff */
 void fault(cpu_t *cpu, uint64_t fault_no);
