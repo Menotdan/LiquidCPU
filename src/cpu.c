@@ -74,7 +74,7 @@ void execute_instruction(cpu_t *cpu) {
     instruction_t *instruction = (instruction_t *) &cpu->memory[cpu->ip];
 
     if (!(cpu->flag & CPU_FLAG_HLT)) {
-        printf("[LiquidCPU] Got instruction 0x%lx\n", instruction->instruction);
+        printf("[LiquidCPU] Got instruction 0x%lx at ip: 0x%lx\n", instruction->instruction, cpu->ip);
 
         /* Memory check */
         if (!is_valid_addr(cpu, cpu->ip + sizeof(instruction_t) - 1)) {
@@ -118,7 +118,7 @@ void execute_instruction(cpu_t *cpu) {
                 fault(cpu, fault_invl_opcode);
                 break;
         }
-        //printf("[LiquidCPU] r0: 0x%lx\n[LiquidCPU] r1: 0x%lx\n", cpu->r0, cpu->r1);
+        printf("[LiquidCPU] r0: 0x%lx\n[LiquidCPU] r1: 0x%lx\n[LiquidCPU] r2: 0x%lx\n", cpu->r0, cpu->r1, cpu->r2);
     }
 
     clock_cycles++;

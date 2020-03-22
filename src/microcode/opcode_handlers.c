@@ -215,7 +215,6 @@ void move_handler(cpu_t *cpu, instruction_t *instruction) {
 
 /* jmp opcode */
 void jmp_handler(cpu_t *cpu, instruction_t *instruction) {
-    printf("[LiquidCPU] Got jmp with data1 = 0x%lx and flags = 0x%lx\n", instruction->data1, instruction->instruction_flags);
     if (instruction->instruction_flags & INST_FLAG_DST_MEM_OP) {
         if (instruction->instruction_flags & INST_FLAG_DST_REG) {
             uint64_t *reg = get_gpr(cpu, instruction->data1);
@@ -229,7 +228,6 @@ void jmp_handler(cpu_t *cpu, instruction_t *instruction) {
             cpu->ip = read_memory_64(cpu, addr);
         } else {
             cpu->ip = read_memory_64(cpu, instruction->data1);
-            printf("[LiquidCPU] cpu->ip: 0x%lx\n", cpu->ip);
         }
     } else if (instruction->instruction_flags & INST_FLAG_DST_CONST) {
         cpu->ip = instruction->data1;

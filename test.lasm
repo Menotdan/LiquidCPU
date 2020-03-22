@@ -1,6 +1,7 @@
 start:
-    jmp start2
-start2:
-    jmp start3
-start3:
-    jmp start
+    call function
+    hlt
+
+function:
+    inc r0
+    ret
