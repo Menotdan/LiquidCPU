@@ -74,7 +74,7 @@ void execute_instruction(cpu_t *cpu) {
     instruction_t *instruction = (instruction_t *) &cpu->memory[cpu->ip];
 
     if (!(cpu->flag & CPU_FLAG_HLT)) {
-        //printf("[LiquidCPU] Got instruction 0x%lx\n", instruction->instruction);
+        printf("[LiquidCPU] Got instruction 0x%lx\n", instruction->instruction);
 
         /* Memory check */
         if (!is_valid_addr(cpu, cpu->ip + sizeof(instruction_t) - 1)) {
@@ -101,6 +101,18 @@ void execute_instruction(cpu_t *cpu) {
             case instruction_dec:
                 dec_handler(cpu, instruction);
                 break;
+            case instruction_push:
+                push_handler(cpu, instruction);
+                break;
+            case instruction_pop:
+                pop_handler(cpu, instruction);
+                break;
+            case instruction_call:
+                call_handler(cpu, instruction);
+                break;
+            case instruction_ret:
+                ret_handler(cpu, instruction);
+                break;
             default:
                 printf("[LiquidCPU] Bad instruction %lx\n", instruction->instruction);
                 fault(cpu, fault_invl_opcode);
@@ -110,10 +122,10 @@ void execute_instruction(cpu_t *cpu) {
     }
 
     clock_cycles++;
-    if (clock_cycles % 100000 == 0) {
-        printf("[LiquidCPU] r0: 0x%lx\n[LiquidCPU] r1: 0x%lx\n[LiquidCPU] ip: 0x%lx\n", cpu->r0, cpu->r1, cpu->ip);
-        printf("[LiquidCPU] clock_cycles: %lu\n", clock_cycles);
-    }
+    // if (clock_cycles % 1000000 == 0) {
+    //     printf("[LiquidCPU] r0: 0x%lx\n[LiquidCPU] r1: 0x%lx\n[LiquidCPU] ip: 0x%lx\n", cpu->r0, cpu->r1, cpu->ip);
+    //     printf("[LiquidCPU] clock_cycles: %lu\n", clock_cycles);
+    // }
 }
 
 void setup_cpu_mem(cpu_t *cpu) {

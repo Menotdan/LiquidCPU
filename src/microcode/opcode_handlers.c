@@ -115,6 +115,26 @@ uint64_t *get_gpr(cpu_t *cpu, uint64_t register_info) {
     return ret;
 }
 
+uint64_t *get_visible_reg(cpu_t *cpu, uint64_t register_info) {
+    uint64_t *ret = get_gpr(cpu, register_info);
+    if (ret) {
+        return ret;
+    } else {
+        switch (register_info) {
+            case reg_ip:
+                ret = &cpu->ip;
+                break;
+            case reg_sp:
+                ret = &cpu->sp;
+                break;
+            default:
+                break;
+        }
+    }
+
+    return ret;
+}
+
 /* mov opcode */
 void move_handler(cpu_t *cpu, instruction_t *instruction) {
     uint64_t *src;
@@ -195,6 +215,7 @@ void move_handler(cpu_t *cpu, instruction_t *instruction) {
 
 /* jmp opcode */
 void jmp_handler(cpu_t *cpu, instruction_t *instruction) {
+    printf("[LiquidCPU] Got jmp with data1 = 0x%lx and flags = 0x%lx\n", instruction->data1, instruction->instruction_flags);
     if (instruction->instruction_flags & INST_FLAG_DST_MEM_OP) {
         if (instruction->instruction_flags & INST_FLAG_DST_REG) {
             uint64_t *reg = get_gpr(cpu, instruction->data1);
@@ -208,6 +229,7 @@ void jmp_handler(cpu_t *cpu, instruction_t *instruction) {
             cpu->ip = read_memory_64(cpu, addr);
         } else {
             cpu->ip = read_memory_64(cpu, instruction->data1);
+            printf("[LiquidCPU] cpu->ip: 0x%lx\n", cpu->ip);
         }
     } else if (instruction->instruction_flags & INST_FLAG_DST_CONST) {
         cpu->ip = instruction->data1;
@@ -280,4 +302,82 @@ void dec_handler(cpu_t *cpu, instruction_t *instruction) {
 
         (*dst)--;
     }
+}
+
+void push_handler(cpu_t *cpu, instruction_t *instruction) {
+    uint64_t data;
+    if (instruction->instruction_flags & INST_FLAG_DST_MEM_OP) {
+        if (instruction->instruction_flags & INST_FLAG_DST_REG) {
+            uint64_t *reg = get_gpr(cpu, instruction->data1);
+            if (!reg) {
+                fault(cpu, fault_bad_reg);
+            }
+
+            uint64_t addr = *reg;
+
+            // We got the address
+            data = read_memory_64(cpu, addr);
+        } else {
+            data = read_memory_64(cpu, instruction->data1);
+        }
+    } else if (instruction->instruction_flags & INST_FLAG_DST_CONST) {
+        data = instruction->data1;
+    } else if (instruction->instruction_flags & INST_FLAG_DST_REG) {
+        uint64_t *reg = get_visible_reg(cpu, instruction->data1);
+        if (!reg) {
+            fault(cpu, fault_bad_reg);
+        }
+
+        data = *reg;
+    }
+
+    write_memory_64(cpu, cpu->sp, data);
+    cpu->sp += 8;
+}
+
+void pop_handler(cpu_t *cpu, instruction_t *instruction) {
+    cpu->sp -= 8;
+    uint64_t data = read_memory_64(cpu, cpu->sp);
+    
+    if (instruction->instruction_flags & INST_FLAG_DST_MEM_OP) {
+        if (instruction->instruction_flags & INST_FLAG_DST_REG) {
+            uint64_t *reg = get_gpr(cpu, instruction->data1);
+            if (!reg) {
+                fault(cpu, fault_bad_reg);
+            }
+
+            uint64_t addr = *reg;
+
+            // We got the address
+            write_memory_64(cpu, addr, data);
+        } else {
+            write_memory_64(cpu, instruction->data1, data);
+        }
+    } else if (instruction->instruction_flags & INST_FLAG_DST_CONST) {
+        printf("[LiquidCPU] Bad constant. bruh bruh\n");
+        fault(cpu, fault_bad_flg);
+    } else if (instruction->instruction_flags & INST_FLAG_DST_REG) {
+        uint64_t *reg = get_visible_reg(cpu, instruction->data1);
+        if (!reg) {
+            fault(cpu, fault_bad_reg);
+        }
+
+        *reg = data;
+    }
+}
+
+void call_handler(cpu_t *cpu, instruction_t *instruction) {
+    instruction_t instruction_push_tmp;
+    instruction_push_tmp.instruction_flags = INST_FLAG_DST_REG;
+    instruction_push_tmp.data1 = reg_ip;
+    push_handler(cpu, &instruction_push_tmp);
+
+    jmp_handler(cpu, instruction); // Jump, because call should have the same calling signature
+}
+
+void ret_handler(cpu_t *cpu, instruction_t *instruction) {
+    instruction_t instruction_pop_tmp;
+    instruction_pop_tmp.instruction_flags = INST_FLAG_DST_REG;
+    instruction_pop_tmp.data1 = reg_ip;
+    pop_handler(cpu, &instruction_pop_tmp);
 }

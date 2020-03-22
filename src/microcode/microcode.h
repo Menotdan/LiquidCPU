@@ -44,6 +44,10 @@ enum INSTRUCTIONS {
     instruction_jmp,
     instruction_inc,
     instruction_dec,
+    instruction_push,
+    instruction_pop,
+    instruction_call,
+    instruction_ret,
 };
 
 enum OPERAND_SIZES {

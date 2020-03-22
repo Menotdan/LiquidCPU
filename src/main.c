@@ -11,6 +11,10 @@ void execute_binary_liquid_cpu(char *filename) {
 
     /* Load the binary into memory */
     FILE *size_get = fopen(filename, "r");
+    if (!size_get) {
+        printf("[Liquid Main] Couldn't open %s\n", filename);
+        exit(1);
+    }
     fseek(size_get, 0, SEEK_END);
     int64_t fsize = ftell(size_get);
     fclose(size_get);
@@ -35,6 +39,13 @@ void execute_binary_liquid_cpu(char *filename) {
     cpu_code_loop(&my_cpu);
 }
 
-void main() {
-    execute_binary_liquid_cpu("liquid_test.liq");
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        printf("usage: %s <filename>\n", argv[0]);
+        return 1;
+    }
+
+    execute_binary_liquid_cpu(argv[1]);
+
+    return 0;
 }
