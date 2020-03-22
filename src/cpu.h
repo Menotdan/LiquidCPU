@@ -26,6 +26,9 @@ typedef struct {
     /* Memory area */
     uint8_t *memory;
     uint64_t memory_size;
+
+    /* Clock cycles */
+    uint64_t clock_cycles;
 } cpu_t;
 
 void setup_cpu(cpu_t *cpu);

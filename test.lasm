@@ -1,7 +1,9 @@
 start:
-    call function
-    hlt
+    push 38
+    mov r0, [4096]
+loop:
+    inc r1
+    jmp r0
 
-function:
-    inc r0
-    ret
+data1:
+    dq 12345

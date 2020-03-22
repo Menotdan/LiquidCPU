@@ -68,18 +68,16 @@ uint64_t get_operand_size(uint8_t operand_size) {
     }
 }
 
-uint64_t clock_cycles = 0;
-
 void execute_instruction(cpu_t *cpu) {
     instruction_t *instruction = (instruction_t *) &cpu->memory[cpu->ip];
 
     if (!(cpu->flag & CPU_FLAG_HLT)) {
-        printf("[LiquidCPU] Got instruction 0x%lx at ip: 0x%lx\n", instruction->instruction, cpu->ip);
-
         /* Memory check */
         if (!is_valid_addr(cpu, cpu->ip + sizeof(instruction_t) - 1)) {
             fault(cpu, fault_mem_err); // Memory access check
         }
+
+        //printf("[LiquidCPU] Got instruction 0x%lx at ip: 0x%lx\n", instruction->instruction, cpu->ip);
         cpu->ip += sizeof(instruction_t); // Modify the IP before executing, so that jmp, etc. works
 
         switch (instruction->instruction) {
@@ -118,14 +116,14 @@ void execute_instruction(cpu_t *cpu) {
                 fault(cpu, fault_invl_opcode);
                 break;
         }
-        printf("[LiquidCPU] r0: 0x%lx\n[LiquidCPU] r1: 0x%lx\n[LiquidCPU] r2: 0x%lx\n", cpu->r0, cpu->r1, cpu->r2);
+       //printf("[LiquidCPU] r0: 0x%lx\n[LiquidCPU] r1: 0x%lx\n[LiquidCPU] r2: 0x%lx\n", cpu->r0, cpu->r1, cpu->r2);
     }
 
-    clock_cycles++;
-    // if (clock_cycles % 1000000 == 0) {
-    //     printf("[LiquidCPU] r0: 0x%lx\n[LiquidCPU] r1: 0x%lx\n[LiquidCPU] ip: 0x%lx\n", cpu->r0, cpu->r1, cpu->ip);
-    //     printf("[LiquidCPU] clock_cycles: %lu\n", clock_cycles);
-    // }
+    cpu->clock_cycles++;
+    if (cpu->clock_cycles % 100000000 == 0) {
+        printf("[LiquidCPU] r0: 0x%lx\n[LiquidCPU] r1: 0x%lx\n[LiquidCPU] ip: 0x%lx\n", cpu->r0, cpu->r1, cpu->ip);
+        printf("[LiquidCPU] clock_cycles: %lu\n", cpu->clock_cycles);
+    }
 }
 
 void setup_cpu_mem(cpu_t *cpu) {
@@ -149,6 +147,9 @@ void setup_cpu(cpu_t *cpu) {
     cpu->r5 = 0;
     cpu->r6 = 0;
     cpu->r7 = 0;
+
+    /* Clear clock count */
+    cpu->clock_cycles = 0;
 
     /* Set up CPU's memory area */
     setup_cpu_mem(cpu);

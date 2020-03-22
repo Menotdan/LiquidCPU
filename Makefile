@@ -8,7 +8,7 @@ liquid_cpu: ${OBJ}
 	${CC} -o liquid_cpu ${OBJ}
 
 %.o: %.c
-	${CC} -O2 -I src -c $< -o $@
+	${CC} -g -O2 -I src -c $< -o $@
 
 clean:
 	rm -rf ${OBJ}
