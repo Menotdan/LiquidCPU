@@ -179,6 +179,9 @@ def parse_file(filename):
             if token[1] in instruction_names:
                 # Increment by instruction size
                 current_address += 19
+            elif token[1] in assembler_macros:
+                if token[1] == "dq":
+                    current_address += 8
         elif token[0] == "label_end":
             labels.append((last_identifier[1], current_address))
         elif token[0] == "newline":
@@ -495,12 +498,38 @@ def parse_file(filename):
                     for instruction_token in instruction_tokens:
                         if instruction_token[0] != "space":
                             if instruction_token[0] == "identifier":
-                                # Check that we haven't already handled the identifier for this instruction
+                                # Check that we haven't already handled the identifiers for this instruction
                                 if handled_operands == 2:
                                     assembler_error("Stray " + instruction_token[0] + " after " + instruction_name, line, filename)
 
                                 # Got the identifier
-                                if instruction_token[1] in gprs:
+                                if any(instruction_token[1] in i for i in labels):
+                                    # It is a label
+                                    label = list(filter(lambda x:instruction_token[1] in x, labels))
+                                    if not in_bracket:
+                                        if handled_operands == 0:
+                                            assembler_error("Cannot " + instruction_name + " into a constant label address!", line, filename)
+
+                                        elif handled_operands == 1:
+                                            if not handled_comma:
+                                                assembler_error("Missing comma for operand 2 of " + instruction_name + "!", line, filename)
+                                            assembler_log(instruction_name + " using label mem " + instruction_token[1])
+                                            new_instruction.data2 = label[0][1]
+                                            new_instruction.instruction_flags |= INST_FLAG_SRC_CONST
+                                    else:
+                                        if handled_operands == 0:
+                                            assembler_log(instruction_name + " using label mem " + instruction_token[1])
+                                            new_instruction.data1 = label[0][1]
+                                            new_instruction.instruction_flags |= INST_FLAG_DST_MEM_OP
+
+                                        elif handled_operands == 1:
+                                            if not handled_comma:
+                                                assembler_error("Missing comma for operand 2 of " + instruction_name + "!", line, filename)
+
+                                            assembler_log(instruction_name + " using label mem " + instruction_token[1])
+                                            new_instruction.data2 = label[0][1]
+                                            new_instruction.instruction_flags |= INST_FLAG_SRC_MEM_OP
+                                elif instruction_token[1] in gprs:
                                     # It is a GPR
 
                                     if not in_bracket:

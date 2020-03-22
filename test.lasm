@@ -1,9 +1,13 @@
 start:
-    push 38
-    mov r0, [4096]
-loop:
-    inc r1
-    jmp r0
+    call set_data
+    hlt
+    
+set_data:
+    mov r0, [data1]
+    mov r1, [data2]
+    ret
 
 data1:
     dq 12345
+data2:
+    dq 54321
